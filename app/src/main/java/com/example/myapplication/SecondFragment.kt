@@ -3,7 +3,6 @@ package com.example.myapplication
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,8 +10,6 @@ import android.view.ViewGroup
 import android.widget.CalendarView
 import androidx.navigation.fragment.findNavController
 import com.example.myapplication.databinding.FragmentSecondBinding
-import java.util.*
-import kotlin.concurrent.timer
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -25,7 +22,7 @@ class SecondFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var player1 : MediaPlayer
+    lateinit var mediaPlayer : MediaPlayer
 
 
     val timer1 = object : CountDownTimer(30000, 20) {
@@ -34,14 +31,12 @@ class SecondFragment : Fragment() {
 
             binding.calendarView.rotationX = millisUntilFinished.toFloat() / 10
             binding.calendarView.rotationY = millisUntilFinished.toFloat() / 14
-            //binding.calendarView.rotationZ = millisUntilFinished.toFloat()
         }
-
         override fun onFinish() {
-            //mTextField.setText("done!")
             binding.calendarView.rotationX = 0.0F
             binding.calendarView.rotationY = 0.0F
             binding.calendarView.setBackgroundResource(0)
+            mediaPlayer.pause()
         }
     }
 
@@ -51,8 +46,8 @@ class SecondFragment : Fragment() {
     ): View? {
 
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
+        mediaPlayer = MediaPlayer.create(context, R.raw.calendar)
         return binding.root
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -71,12 +66,15 @@ class SecondFragment : Fragment() {
                     binding.textView2.text = "Я календарь"
                     binding.calendarView.setBackgroundResource(R.drawable.mikhail_shufutinsky_small)
                     timer1.start()
+                    mediaPlayer.seekTo(0)
+                    mediaPlayer.start()
                 }
                 else {
                     binding.calendarView.rotationX = 0.0F
                     binding.calendarView.rotationY = 0.0F
                     binding.calendarView.setBackgroundResource(0)
                     timer1.cancel()
+                    mediaPlayer.pause()
                 }
             }
         })
@@ -86,5 +84,7 @@ class SecondFragment : Fragment() {
         super.onDestroyView()
         _binding = null
         timer1.cancel()
+        mediaPlayer.stop()
+        mediaPlayer.release()
     }
 }

@@ -44,6 +44,7 @@ class FirstFragment : Fragment() {
         }
         binding.button2.setOnClickListener {
             Log.d("TAG1", "Button 2 has been touched")
+            //findNavController().navigate(R.id.action_FirstFragment_to_thirdFragment)
         }
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
