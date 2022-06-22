@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.SeekBar
 import androidx.navigation.fragment.findNavController
 import com.example.myapplication.databinding.FragmentFirstBinding
-import com.google.android.material.slider.Slider
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -44,7 +43,7 @@ class FirstFragment : Fragment() {
         }
         binding.button2.setOnClickListener {
             Log.d("TAG1", "Button 2 has been touched")
-            //findNavController().navigate(R.id.action_FirstFragment_to_thirdFragment)
+            findNavController().navigate(R.id.action_FirstFragment_to_paintFragment)
         }
         binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
