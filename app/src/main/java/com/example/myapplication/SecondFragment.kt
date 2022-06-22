@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
@@ -11,6 +12,7 @@ import android.widget.CalendarView
 import androidx.navigation.fragment.findNavController
 import com.example.myapplication.databinding.FragmentSecondBinding
 import java.util.*
+import kotlin.concurrent.timer
 
 /**
  * A simple [Fragment] subclass as the second destination in the navigation.
@@ -22,6 +24,26 @@ class SecondFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
+
+    private lateinit var player1 : MediaPlayer
+
+
+    val timer1 = object : CountDownTimer(30000, 20) {
+
+        override fun onTick(millisUntilFinished: Long) {
+
+            binding.calendarView.rotationX = millisUntilFinished.toFloat() / 10
+            binding.calendarView.rotationY = millisUntilFinished.toFloat() / 14
+            //binding.calendarView.rotationZ = millisUntilFinished.toFloat()
+        }
+
+        override fun onFinish() {
+            //mTextField.setText("done!")
+            binding.calendarView.rotationX = 0.0F
+            binding.calendarView.rotationY = 0.0F
+            binding.calendarView.setBackgroundResource(0)
+        }
+    }
 
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
@@ -48,24 +70,14 @@ class SecondFragment : Fragment() {
                 if(dayOfMonth == 3 && month == 8) {
                     binding.textView2.text = "Я календарь"
                     binding.calendarView.setBackgroundResource(R.drawable.mikhail_shufutinsky_small)
-                    object : CountDownTimer(30000, 20) {
-
-                        override fun onTick(millisUntilFinished: Long) {
-                            //mTextField.setText("seconds remaining: " + millisUntilFinished / 1000)
-                            binding.calendarView.rotationX = millisUntilFinished.toFloat() / 10
-                            binding.calendarView.rotationY = millisUntilFinished.toFloat() / 14
-                            //binding.calendarView.rotationZ = millisUntilFinished.toFloat()
-                        }
-
-                        override fun onFinish() {
-                            //mTextField.setText("done!")
-                            binding.calendarView.rotationX = 0.0F
-                            binding.calendarView.rotationY = 0.0F
-                            binding.calendarView.setBackgroundResource(0)
-                        }
-                    }
+                    timer1.start()
                 }
-                else binding.calendarView.setBackgroundResource(0)
+                else {
+                    binding.calendarView.rotationX = 0.0F
+                    binding.calendarView.rotationY = 0.0F
+                    binding.calendarView.setBackgroundResource(0)
+                    timer1.cancel()
+                }
             }
         })
     }
@@ -73,5 +85,6 @@ class SecondFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        timer1.cancel()
     }
 }
