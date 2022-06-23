@@ -43,7 +43,7 @@ class SecondFragment : Fragment() {
     override fun onCreateView(
             inflater: LayoutInflater, container: ViewGroup?,
             savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         _binding = FragmentSecondBinding.inflate(inflater, container, false)
         mediaPlayer = MediaPlayer.create(context, R.raw.calendar)
