@@ -69,7 +69,6 @@ class CanvasView @JvmOverloads constructor(
         init {
             getNewFruits(snake)
         }
-
         fun getFruits() : ArrayList<Point> {
             return fruits
         }
@@ -190,18 +189,18 @@ class CanvasView @JvmOverloads constructor(
     }
 
     class Drawer(_paintSnake:Paint, _paintboard:Paint, _border_width:Int, _border_height:Int, _board:Board, _xOffset:Int, _yOffset:Int, _fruit:Fruit) {
-        val fruit = _fruit
-        val board = _board
-        val xOffset = _xOffset.toFloat()
-        val yOffset = _yOffset.toFloat()
-        val paintSnake = _paintSnake
-        val paintBoard = _paintboard
-        val border_width = _border_width.toFloat()
-        val border_height = _border_height.toFloat()
-        val sq_w = border_width / board.getWith().toFloat()
-        val sq_h = border_height / board.getHeight().toFloat()
+        private val fruit = _fruit
+        private val board = _board
+        private val xOffset = _xOffset.toFloat()
+        private val yOffset = _yOffset.toFloat()
+        private val paintSnake = _paintSnake
+        private val paintBoard = _paintboard
+        private val border_width = _border_width.toFloat()
+        private val border_height = _border_height.toFloat()
+        private val sq_w = border_width / board.getWith().toFloat()
+        private val sq_h = border_height / board.getHeight().toFloat()
 
-        fun eatFruit(snake: Snake) {
+        private fun eatFruit(snake: Snake) {
             val i = checkFruitForward(snake)
             if(i != null){
                 snake.eatFruit()
@@ -247,7 +246,7 @@ class CanvasView @JvmOverloads constructor(
             }
         }
 
-        fun checkSnake(snake:Snake) : Boolean { // if snake ate itself, snake is false
+        private fun checkSnake(snake:Snake) : Boolean { // if snake ate itself, snake is false
             for(i in 0..snake.getSnake().size - 2){
                 if(snake.getSnake()[snake.getSnake().size - 1].x == snake.getSnake()[i].x
                     && snake.getSnake()[snake.getSnake().size - 1].y == snake.getSnake()[i].y)
