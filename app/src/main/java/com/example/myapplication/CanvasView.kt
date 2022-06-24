@@ -10,9 +10,10 @@ import android.os.CountDownTimer
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import kotlin.random.Random
 
-public val board = CanvasView.Board()
-public val snake = CanvasView.Snake(_board = board)
+val board = CanvasView.Board()
+val snake = CanvasView.Snake(_board = board)
 
 class CanvasView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -29,11 +30,11 @@ class CanvasView @JvmOverloads constructor(
         color = Color.BLACK
         style = Paint.Style.STROKE
     }
-
+    val fruit = Fruit(_board = board, _snake = snake)
     val drawer : Drawer
 
     init {
-        drawer = Drawer(_board = board, _border_height = 1000, _border_width = 1000, _paintboard = paint2, _paintSnake = paint, _xOffset = 120, _yOffset = 100)
+        drawer = Drawer(_board = board, _border_height = 1000, _border_width = 1000, _paintboard = paint2, _paintSnake = paint, _xOffset = 120, _yOffset = 100, _fruit = fruit)
     }
 
     val timer1 = object : CountDownTimer(30000, 100) {
@@ -41,7 +42,6 @@ class CanvasView @JvmOverloads constructor(
         override fun onTick(millisUntilFinished: Long) {
             snake.goForward()
             invalidate()
-
         }
         override fun onFinish() {
         this.start()
@@ -60,17 +60,74 @@ class CanvasView @JvmOverloads constructor(
         drawer.Draw(snake, canvas)
     }
 
-    class Snake(start_l:Int = 12, _speed:Int = 1, _dir:Dirs = Dirs.RIGHT, _board:Board) {
+    class Fruit(_count : Int = 1, _board : Board, _snake: Snake) {
+        private val snake = _snake
+        private val countInMoment = _count
+        private val board = _board
+        private var fruits = ArrayList<Point>()
 
-        var lenght = start_l
+        init {
+            getNewFruits(snake)
+        }
+
+        fun getFruits() : ArrayList<Point> {
+            return fruits
+        }
+        fun eatFruit(i : Int) {
+            fruits.removeAt(i)
+        }
+        fun getNewFruits(snake:Snake) : ArrayList<Point> {
+            for(i in 0 until countInMoment) {
+                while(true) {
+                    val fruit = newFruit()
+                    if(!inSnake(fruit, snake)) {
+                        fruits.add(fruit)
+                        break
+                    }
+                }
+            }
+            return fruits
+        }
+        private fun newFruit() : Point {
+            val point = Point((0..board.getWith()).random(), (0..board.getHeight()).random())
+            return point
+        }
+        private fun inSnake(point: Point, snake: Snake) : Boolean {
+            for(i in 0 until snake.getSnake().size) {
+                if(point == snake.getSnake()[i]) return true
+            }
+            return false
+        }
+    }
+
+    class Snake(_start_l:Int = 12, _speed:Int = 1, _dir:Dirs = Dirs.RIGHT, _board:Board) {
+        val start_l = _start_l
+        var lenght = _start_l
         val board = _board
         var speed = _speed
         var dir = _dir
         private var snake_parts = ArrayList<Point>()
 
         init {
-            for(i in 0..lenght) {
-                val newP = Point(board.getWith()/2 - lenght + i, board.getHeight()/2)
+            reStart()
+        }
+
+        fun eatFruit() {
+            val p : Point
+            p = when(dir) {
+                Dirs.UP -> Point(snake_parts[lenght - 1].x, snake_parts[lenght - 1].y - 1)
+                Dirs.LEFT -> Point(snake_parts[lenght - 1].x - 1, snake_parts[lenght - 1].y)
+                Dirs.RIGHT -> Point(snake_parts[lenght - 1].x + 1, snake_parts[lenght - 1].y)
+                Dirs.DOWN -> Point(snake_parts[lenght - 1].x, snake_parts[lenght - 1].y + 1)
+            }
+            snake_parts.add(p)
+            lenght ++
+        }
+
+        fun reStart() {
+            snake_parts = ArrayList<Point>()
+            for(i in 0..start_l) {
+                val newP = Point(board.getWith()/2 - start_l + i, board.getHeight()/2)
                 snake_parts.add(newP)
             }
         }
@@ -94,12 +151,12 @@ class CanvasView @JvmOverloads constructor(
                 }
                 Dirs.RIGHT -> {
                     if(snake_parts[a].x + speed > board.getWith())
-                        snake_parts[a] = Point(0, snake_parts[a].y)
+                        snake_parts[a] = Point(1, snake_parts[a].y)
                     else snake_parts[a] = Point(snake_parts[a].x + speed, snake_parts[a].y)
                 }
                 Dirs.DOWN -> {
                     if(snake_parts[a].y + speed > board.getHeight())
-                        snake_parts[a] = Point(snake_parts[a].x, 0)
+                        snake_parts[a] = Point(snake_parts[a].x, 1)
                     else snake_parts[a] = Point(snake_parts[a].x, snake_parts[a].y + speed)
                 }
             }
@@ -132,7 +189,8 @@ class CanvasView @JvmOverloads constructor(
         }
     }
 
-    class Drawer(_paintSnake:Paint, _paintboard:Paint, _border_width:Int, _border_height:Int, _board:Board, _xOffset:Int, _yOffset:Int) {
+    class Drawer(_paintSnake:Paint, _paintboard:Paint, _border_width:Int, _border_height:Int, _board:Board, _xOffset:Int, _yOffset:Int, _fruit:Fruit) {
+        val fruit = _fruit
         val board = _board
         val xOffset = _xOffset.toFloat()
         val yOffset = _yOffset.toFloat()
@@ -142,8 +200,75 @@ class CanvasView @JvmOverloads constructor(
         val border_height = _border_height.toFloat()
         val sq_w = border_width / board.getWith().toFloat()
         val sq_h = border_height / board.getHeight().toFloat()
+
+        fun eatFruit(snake: Snake) {
+            val i = checkFruitForward(snake)
+            if(i != null){
+                snake.eatFruit()
+                fruit.eatFruit(i)
+                if(fruit.getFruits().isEmpty()) fruit.getNewFruits(snake)
+            }
+        }
+
+        private fun checkFruitForward(snake: Snake) : Int? {
+            when(snake.dir) {
+                Dirs.UP -> {
+                    for(i in 0 until fruit.getFruits().size) {
+                        if(fruit.getFruits()[i].y + 1 == snake.getSnake()[snake.lenght - 1].y &&
+                            fruit.getFruits()[i].x == snake.getSnake()[snake.lenght - 1].x)
+                            return i
+                    }
+                    return null
+                }
+                Dirs.DOWN -> {
+                    for(i in 0 until fruit.getFruits().size) {
+                        if(fruit.getFruits()[i].y - 1 == snake.getSnake()[snake.lenght - 1].y &&
+                            fruit.getFruits()[i].x == snake.getSnake()[snake.lenght - 1].x)
+                            return i
+                    }
+                    return null
+                }
+                Dirs.RIGHT -> {
+                    for(i in 0 until fruit.getFruits().size) {
+                        if(fruit.getFruits()[i].y == snake.getSnake()[snake.lenght - 1].y &&
+                            fruit.getFruits()[i].x - 1 == snake.getSnake()[snake.lenght - 1].x)
+                            return i
+                    }
+                    return null
+                }
+                Dirs.LEFT -> {
+                    for(i in 0 until fruit.getFruits().size) {
+                        if(fruit.getFruits()[i].y == snake.getSnake()[snake.lenght - 1].y &&
+                            fruit.getFruits()[i].x + 1 == snake.getSnake()[snake.lenght - 1].x)
+                            return i
+                    }
+                    return null
+                }
+            }
+        }
+
+        fun checkSnake(snake:Snake) : Boolean { // if snake ate itself, snake is false
+            for(i in 0..snake.getSnake().size - 2){
+                if(snake.getSnake()[snake.getSnake().size - 1].x == snake.getSnake()[i].x
+                    && snake.getSnake()[snake.getSnake().size - 1].y == snake.getSnake()[i].y)
+                    return false
+            }
+            return true
+        }
+
         fun Draw(snake:Snake, canvas: Canvas?) {
+            eatFruit(snake)
+            if(!checkSnake(snake))
+                snake.reStart()
             canvas?.drawRect(xOffset, yOffset, border_width + xOffset, border_height + yOffset, paintBoard)
+            for(i in fruit.getFruits()){
+                canvas?.drawRect(
+                    xOffset + (i.x * sq_w),
+                    yOffset + (i.y * sq_h),
+                    xOffset + ((i.x - 1) * sq_w),
+                    yOffset + ((i.y - 1) * sq_h),
+                    paintSnake)
+            }
             for(i in snake.getSnake()) {
                 canvas?.drawRect(
                     xOffset + (i.x * sq_w),
