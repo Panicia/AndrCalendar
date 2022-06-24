@@ -18,9 +18,6 @@ class CanvasView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    var kek = 0F
-    var ticX = 0f
-    var ticY = 0f
     var canv : Canvas? = null
     val paint = Paint().apply {
         isAntiAlias = true
@@ -29,25 +26,19 @@ class CanvasView @JvmOverloads constructor(
     }
     val paint2 = Paint().apply {
         isAntiAlias = true
-        color = Color.WHITE
+        color = Color.BLACK
         style = Paint.Style.STROKE
     }
 
     val drawer : Drawer
 
-    val border_height : Int
-    val border_width : Int
-
     init {
-        border_height = this.height
-        border_width = this.width
-        drawer = Drawer(_board = board, _border_height = 1000, _border_width = 1000, _paintboard = paint2, _paintSnake = paint)
+        drawer = Drawer(_board = board, _border_height = 1000, _border_width = 1000, _paintboard = paint2, _paintSnake = paint, _xOffset = 120, _yOffset = 100)
     }
 
     val timer1 = object : CountDownTimer(30000, 100) {
 
         override fun onTick(millisUntilFinished: Long) {
-            kek += 1
             snake.goForward()
             invalidate()
 
@@ -62,26 +53,10 @@ class CanvasView @JvmOverloads constructor(
         timer1.start()
     }
 
-
-
-    fun DrawLol() {
-        paint.strokeWidth = 8F
-        val defTic = 10f
-
-        when(Dir){
-            Dirs.UP -> ticY -= defTic
-            Dirs.DOWN -> ticY += defTic
-            Dirs.RIGHT -> ticX += defTic
-            Dirs.LEFT -> ticX -=defTic
-        }
-        canv?.drawRect(ticX + 0f,ticY + 0f,ticX + 300f,ticY + 500f, paint)
-    }
-
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
         canv = canvas
-        //DrawLol()
         drawer.Draw(snake, canvas)
     }
 
@@ -108,12 +83,12 @@ class CanvasView @JvmOverloads constructor(
             }
             when (dir) {
                 Dirs.UP -> {
-                    if(snake_parts[a].y - speed < 0)
+                    if(snake_parts[a].y - speed - 1 < 0)
                         snake_parts[a] = Point(snake_parts[a].x, board.getHeight())
                     else snake_parts[a] = Point(snake_parts[a].x,snake_parts[a].y - speed)
                 }
                 Dirs.LEFT -> {
-                    if(snake_parts[a].x - speed < 0)
+                    if(snake_parts[a].x - speed - 1 < 0)
                         snake_parts[a] = Point(board.getWith(), snake_parts[a].y)
                     else snake_parts[a] = Point(snake_parts[a].x - speed, snake_parts[a].y)
                 }
@@ -157,22 +132,24 @@ class CanvasView @JvmOverloads constructor(
         }
     }
 
-    class Drawer(_paintSnake:Paint, _paintboard:Paint, _border_width:Int, _border_height:Int, _board:Board) {
+    class Drawer(_paintSnake:Paint, _paintboard:Paint, _border_width:Int, _border_height:Int, _board:Board, _xOffset:Int, _yOffset:Int) {
         val board = _board
+        val xOffset = _xOffset.toFloat()
+        val yOffset = _yOffset.toFloat()
         val paintSnake = _paintSnake
         val paintBoard = _paintboard
-        val border_width = _border_width
-        val border_height = _border_height
-        val sq_w = border_width / board.getWith()
-        val sq_h = border_height / board.getHeight()
+        val border_width = _border_width.toFloat()
+        val border_height = _border_height.toFloat()
+        val sq_w = border_width / board.getWith().toFloat()
+        val sq_h = border_height / board.getHeight().toFloat()
         fun Draw(snake:Snake, canvas: Canvas?) {
-            canvas?.drawRect(0f, 0f, border_width.toFloat(), border_height.toFloat(), paintBoard)
+            canvas?.drawRect(xOffset, yOffset, border_width + xOffset, border_height + yOffset, paintBoard)
             for(i in snake.getSnake()) {
                 canvas?.drawRect(
-                    (i.x * sq_w).toFloat(),
-                    (i.y * sq_h).toFloat(),
-                    ((i.x - 1) * sq_w).toFloat(),
-                    ((i.y - 1) * sq_h).toFloat(),
+                    xOffset + (i.x * sq_w),
+                    yOffset + (i.y * sq_h),
+                    xOffset + ((i.x - 1) * sq_w),
+                    yOffset + ((i.y - 1) * sq_h),
                     paintSnake)
             }
         }
