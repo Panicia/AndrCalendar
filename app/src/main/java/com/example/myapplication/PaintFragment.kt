@@ -54,7 +54,22 @@ class PaintFragment : Fragment() {
             if(dir_s != null) snake.changeDir(dir_s)
             true
         }
+        val func123 = { i: Int, _: (Int) -> Int ->
+            val a = i + 1523
+            a
+        }
+
+        func123(123) {it + 5}
+        func123(123, func1234)
+        func1234(123)
     }
+
+    private val func1234 =
+    {
+        i : Int ->
+        i + 1523
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
